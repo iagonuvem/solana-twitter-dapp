@@ -1,93 +1,106 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/idxPpgnz)
 ![School of Solana](https://github.com/Ackee-Blockchain/school-of-solana/blob/master/.banner/banner.png?raw=true)
 
-## 📚Solana Program
-We are about halfway through the course, and you already have some experience with programming on Solana. It is time to create something on your own! You will be building a dApp that will serve as the culmination of everything you have learned so far. Feel free to implement whatever comes to your mind, (as long as it passes the requirements).
+# Solana Twitter DApp
 
-**This does not mean that the School of Solana is coming to an end just yet!** There are still several exciting lectures ahead, as well as one security related task.
+**Deployed Frontend URL:** https://solana-twitter-dapp-seven.vercel.app/
+**Solana Program ID:** yuSXtGfd255QhTFq2HMRwwm6QEvJuz7LnHKqN5aTWZ2
 
-### Task details
-This task consists of two parts:
-1. **Core of your dApp**
-    - A deployed Solana program.
-2. **Frontend**
-    - A simple frontend to interact with the dApp.
+## Project Overview
 
-### Requirements
-- An Anchor program deployed on **Devnet** or **Mainnet**.
-- The Anchor program must use a PDA (Program Derived Address).
-- At least one TypeScript **test** for each Anchor program instruction. These tests should cover both **happy** and **unhappy** (intentional error-triggering) scenarios.
-- A simple **frontend** deployed using your preferred provider (for more info, check below).
-- A filled out **PROJECT_DESCRIPTION.md** file.
+### Description
+This is a small twitter-like dApp, based on the lessons learned through the course. It allows users to create tweets and interact between tweets from other users.
 
-### Ideas
-We highly recommend starting with something simple. Take time to think through your project and work on it in iterations. Do not try to implement everything at once!
+### Key Features
+[TODO: List the main features of your dApp. Be specific about what users can do.]
 
-Below is a list of few ideas to get you started:
-- **Social app**
-    - Instagram
-    - Giphy
-    - Friendtech
-    - Spotify
-- **Blog**
-- **Voting** ([D21 - Janeček method](https://www.ih21.org/en/guidelines))
-- **DeFi**
-    - Crowdfunding
-    - Raffles
-    - Escrow
-    - Tipping
-    - Lending ([Save Documentation](https://docs.save.finance/))
-    - Liquid Staking ([Marinade Documentation](https://docs.marinade.finance/))
-    - Data Query with Pyth ([Pyth Documentation](https://docs.pyth.network/price-feeds))
-    - AMM ([Raydium Documentation](https://raydium.gitbook.io/raydium/))
-- **Gaming**
-    - Browser Game ([Gaming on Solana](https://solanacookbook.com/gaming/nfts-in-games.html#nfts-in-games))
+- Fetch Tweets: User must be able to see all tweets in the dApp
+- Initialize Tweet: User must be able to initialize a new tweet with some content
+- Add Comment to a Tweet: Users must be able to comment (max 500 characters) into some tweet
+- Remove Comment from a Tweet: Users must be able to remove THEIR OWN comments in some tweet, and should not be able to remove comments of other person.
+- Add Reaction to a Tweet: Users must be able to add some reaction to a tweet
+- Remove Reaction from a Tweet: Users must be able to remove reactions made in some tweeet.
 
-### Deadline
-The deadline for this task is **Wednesday, August 27th, at 23:59 UTC**.
->[!CAUTION]
->Note that we will not accept submissions after the deadline.
+### How to Use the dApp
+[TODO: Provide step-by-step instructions for users to interact with your dApp]
 
-### Submission
-There are two folders, one for the Anchor project, and one for the frontend. Push your changes to the **main** branch of **this** repository.
+1. **Connect Wallet**
+2. **Go to Tweet tabs:** Go to Tweets tab
+3. **Init Tweet:** Fill Tweet Data and submit
+4. **Check Tweet Details:** Click details and check tweet
 
->[!IMPORTANT]
->It is essential that you fill out the `PROJECT_DESCRIPTION.md` template completely and accurately. This document will be used by AI for the initial evaluation, so provide detailed information about your project, including working links, clear descriptions, and technical implementation details.
+## Program Architecture
+The program is structured into a monorepo, where `frontend` contains the frontend of the dApp, and `anchor_program` contains the backend
 
-### Evaluation
-The evaluation process is based on the **requirements**. If you meet the requirements, you pass the task!
+### PDA Usage
+The program uses Program Derived Addresses to create deterministic accounts for each tweet, comment and reaction.
 
->[!NOTE]
->We have a record number of participants this season, so the first round of evaluations will be conducted by AI to verify requirements before manual review. AI can make mistakes. If you believe you fulfilled all requirements but weren't graded correctly, please create a support ticket and we will resolve the issue.
+**PDAs Used:**
+- **Tweet PDA**: Derived from seeds `[topic_as_bytes , "TWEET_SEED", user_wallet_pubkey]` - ensures each tweet has a unique signer and can only be modified by them
+- **Comment PDA**: Derived from seeds `["COMMENT_SEED", author_wallet_pubkey, content, tweet_pubkey]` - ensures each comment belong to a author and is inside an specific tweet
+- **Reaction PDA**: ensures each reaction belongs to a author, and tweet.
 
->[!CAUTION]
->We expect original work that demonstrates your understanding and creativity. While you may draw inspiration from examples covered in lessons and tasks, **direct copying is not acceptable**. If you choose to build upon an example from the School of Solana materials, you must significantly expand it with additional features, instructions, and functionality to showcase your learning progress. 
+### Program Instructions
+[TODO: List and describe all the instructions in your Solana program]
 
-### Example Workflow
-Let's say you are going to implement the Twitter dApp as the Solana Program. Here's how the steps could look:
+**Instructions Implemented:**
+- Instruction 1: [Description of what it does]
+- Instruction 2: [Description of what it does]
+- ...
 
-**1.** Implement Twitter dApp using the Anchor framework.
+### Account Structure
+```rust
+#[account]
+#[derive(InitSpace)]
+pub struct Tweet {
+    pub tweet_author: Pubkey,
+    #[max_len(TOPIC_LENGTH)]
+    pub topic: String,
+    #[max_len(CONTENT_LENGTH)]
+    pub content: String,
+    pub likes: u64,
+    pub dislikes: u64,
+    pub bump: u8,
+}
 
-**2.** Test the Twitter dApp using the Anchor framework.
+#[account]
+#[derive(InitSpace)]
+pub struct Reaction {
+    pub reaction_author: Pubkey,
+    pub parent_tweet: Pubkey,
+    pub reaction: ReactionType,
+    pub bump: u8,
+}
 
-**3.** Deploy the Twitter dApp on the Solana Devnet.
+#[account]
+#[derive(InitSpace)]
+pub struct Comment {
+    pub comment_author: Pubkey,
+    pub parent_tweet: Pubkey,
+    #[max_len(COMMENT_LENGTH)]
+    pub content: String,
+    pub bump: u8,
+}
+```
 
-**4.** Using the create solana dapp template, implement frontend for the Twitter dApp.
+## Testing
 
-**5.** Publish Frontend using [Vercel](https://vercel.com).
+### Test Coverage
+Tests were implemented based on the requirements of lesson 4, and added the extra `fetch` tests.
 
-**6.** Fill out the PROJECT_DESCRIPTION.md template.
+**Happy Path Tests:**
+- Should Create a tweet: User should be able to create a tweet
+- Should Comment in a tweet: User should be able to comment in a tweet
+- Should React to a tweet: User should be able to react in a tweet
 
-**7.** Submit the Twitter dApp using GitHub Classroom.
 
-### Useful Links
-- [Vercel](https://vercel.com)
-- [Create Solana Dapp](https://github.com/solana-foundation/create-solana-dapp)
-- [Account Macro Constraints](https://docs.rs/anchor-lang/latest/anchor_lang/derive.Accounts.html#constraints)
-- [Solana Developers Courses](https://solana.com/developers/courses)
+**Unhappy Path Tests:**
+- Should not be able to remove comments that is not owned: Users should not remove comments that he doesn't own.
 
------
+### Running Tests
+```bash
+# Commands to run your tests
+anchor test
+```
 
-### Need help?
->[!TIP]
->If you have any questions, feel free to reach out to us on [Discord](https://discord.gg/z3JVuZyFnp).
+### Additional Notes for Evaluators
+This dApp was based on lesson 4. 
